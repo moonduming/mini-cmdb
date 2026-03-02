@@ -145,7 +145,7 @@ def rotate_one_host_password(
         cred.save(update_fields=["password_enc", "last_rotate_status", "last_rotate_error", "updated_at"])
 
         PasswordRotationHistory.objects.filter(pk=history.id).update(
-            status=PasswordRotationHistory.Status.PENDING,
+            status=PasswordRotationHistory.Status.FAILED,
             error=err or "unknown",
         )
         return RotateResult(ok=False, host_id=host.id, username=username, rotated_at=rotated_at, error=err or "unknown")

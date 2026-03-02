@@ -60,14 +60,11 @@ class HostPingAPIView(APIView):
         if host.last_ping_at and (now - host.last_ping_at) < timedelta(seconds=self.COOLDOWN_SECONDS):
             return Response(
                 {
-                    "message": "ok",
-                    "data": {
-                        "host_id": host.id,
-                        "ip": host.ip,
-                        "reachable": host.last_ping_ok,
-                        "checked_at": host.last_ping_at.strftime("%Y-%m-%d %H:%M:%S"),
-                        "cached": True,
-                    },
+                    "host_id": host.id,
+                    "ip": host.ip,
+                    "reachable": host.last_ping_ok,
+                    "checked_at": host.last_ping_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    "cached": True,
                 },
                 status=status.HTTP_200_OK,
             )
@@ -79,14 +76,11 @@ class HostPingAPIView(APIView):
 
         return Response(
             {
-                "message": "ok",
-                "data": {
-                    "host_id": host.id,
-                    "ip": host.ip,
-                    "reachable": reachable,
-                    "checked_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-                    "cached": False,
-                },
+                "host_id": host.id,
+                "ip": host.ip,
+                "reachable": reachable,
+                "checked_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "cached": False,
             },
             status=status.HTTP_200_OK,
         )

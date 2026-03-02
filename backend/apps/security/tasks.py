@@ -34,6 +34,13 @@ def rotate_passwords_batch(self):
 
     RotationRun.objects.filter(pk=run.pk).update(total_hosts=len(host_ids))
 
+    if not host_ids:
+        RotationRun.objects.filter(pk=run.pk).update(
+            finished_at=now,
+            status=RotationRun.Status.SUCCESS,
+        )
+        return {"run_id": str(run.pk), "total_hosts": 0}
+
     for host_id in host_ids:
         rotate_one_host_task.delay(host_id=host_id, run_id=str(run.pk))
 
