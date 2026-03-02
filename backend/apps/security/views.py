@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 
 from .models import RotationRun
 from .tasks import rotate_passwords_batch
+from .serializers import RotationRunSerializer
+from rest_framework.generics import GenericAPIView
 
 
 class RotationTriggerAPIView(APIView):
@@ -21,34 +23,17 @@ class RotationTriggerAPIView(APIView):
         )
 
 
-class RotationRunListAPIView(APIView):
-    """查看密码轮换批次列表。"""
+class RotationRunListAPIView(GenericAPIView):
+    """查看密码轮换批次列表（使用全局分页）。"""
+
+    queryset = RotationRun.objects.all()
+    serializer_class = RotationRunSerializer
 
     def get(self, request):
-        limit = request.query_params.get("limit", "20")
-        try:
-            limit = max(1, min(int(limit), 100))
-        except (TypeError, ValueError):
-            limit = 20
-
-        runs = RotationRun.objects.all()[:limit]
-        data = [
-            {
-                "id": str(run.id),
-                "scheduled_for": run.scheduled_for,
-                "started_at": run.started_at,
-                "finished_at": run.finished_at,
-                "total_hosts": run.total_hosts,
-                "success_count": run.success_count,
-                "fail_count": run.fail_count,
-                "status": run.status,
-                "message": run.message,
-                "created_at": run.created_at,
-                "updated_at": run.updated_at,
-            }
-            for run in runs
-        ]
-        return Response(data, status=status.HTTP_200_OK)
+        qs = self.get_queryset()
+        page = self.paginate_queryset(qs)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 class RotationRunDetailAPIView(APIView):

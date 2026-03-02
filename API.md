@@ -922,7 +922,8 @@ HTTP `204 No Content`
 
 ### Query 参数
 
-- `limit`：返回最近多少条，默认 `20`，最大 `100`
+- `page`：页码，可选，默认 1
+- `page_size`：每页数量，可选，默认由服务端配置决定，最大 100
 
 ### Body
 
@@ -933,21 +934,24 @@ HTTP `204 No Content`
 ```json
 {
   "message": "ok",
-  "data": [
-    {
-      "id": "7b604d3c-bb5c-4a4f-8f67-8b9a14c9e38d",
-      "scheduled_for": "2026-03-02T08:00:00+08:00",
-      "started_at": "2026-03-02T08:00:00+08:00",
-      "finished_at": "2026-03-02T08:00:05+08:00",
-      "total_hosts": 3,
-      "success_count": 3,
-      "fail_count": 0,
-      "status": "success",
-      "message": "",
-      "created_at": "2026-03-02T08:00:00+08:00",
-      "updated_at": "2026-03-02T08:00:05+08:00"
-    }
-  ]
+  "data": {
+    "count": 8,
+    "data": [
+      {
+        "id": "7fe4c65a-6ea8-452c-bbc0-092406a3adcc",
+        "scheduled_for": "2026-03-02T17:04:00.008553+08:00",
+        "started_at": "2026-03-02T17:04:00.008553+08:00",
+        "finished_at": "2026-03-02T17:04:00.073658+08:00",
+        "total_hosts": 5,
+        "success_count": 5,
+        "fail_count": 0,
+        "status": "success",
+        "message": "",
+        "created_at": "2026-03-02T17:04:00.029077+08:00",
+        "updated_at": "2026-03-02T17:04:00.073689+08:00"
+      }
+    ]
+  }
 }
 ```
 
