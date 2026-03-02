@@ -18,6 +18,7 @@ media/
 staticfiles/
 
 backend/apps/*/migrations/*
+!backend/apps/*/migrations/__init__.py
 
 db.sqlite3
 
@@ -26,3 +27,4 @@ db.sqlite3
 
 .DS_Store
 Thumbs.db
+celerybeat-schedule*

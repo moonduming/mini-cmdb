@@ -1,3 +1,5 @@
+import logging
+import time
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
@@ -46,3 +48,30 @@ class MessageDataJSONRenderer(JSONRenderer):
         # 非分页成功响应统一
         wrapped = {"message": "ok", "data": data}
         return super().render(wrapped, accepted_media_type, renderer_context)
+
+
+class RequestTimingMiddleware:
+    """
+    统计每个请求耗时并写入日志。
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.logger = logging.getLogger("request.timing")
+
+    def __call__(self, request):
+        start = time.perf_counter()
+        response = None
+        try:
+            response = self.get_response(request)
+            return response
+        finally:
+            elapsed_ms = (time.perf_counter() - start) * 1000
+            status_code = getattr(response, "status_code", None)
+            self.logger.info(
+                "request_timing method=%s path=%s status=%s cost_ms=%.2f",
+                request.method,
+                request.get_full_path(),
+                status_code,
+                elapsed_ms,
+            )

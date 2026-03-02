@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
+from cryptography.fernet import Fernet
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +28,33 @@ SECRET_KEY = 'django-insecure-6fde&z+d=+ekku5mqdh*-qnif=f7mogbc*&sn34wfi916hjba(
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+#
+# ==============================
+# CMDB_FERNET_KEY 说明
+# ==============================
+# 用途：
+#   该密钥用于加密/解密主机 root 密码（Fernet 对称加密主密钥）。
+#   Fernet 的 key 必须是“32 字节原始 key 的 urlsafe-base64 编码”（通常长度 44，末尾带 '='）。
+#   生产环境必须通过环境变量注入，严禁把真实密钥写进代码仓库。
+#
+# 本地开发测试：
+#   若未设置环境变量 CMDB_FERNET_KEY，则使用下面的 DEV 默认值（仅用于本地跑通）。
+#   ⚠️ 注意：更换该 key 会导致历史密文无法解密。
+# ==============================
+CMDB_FERNET_KEY = os.getenv(
+    "CMDB_FERNET_KEY",
+    "u4pQkK8x5d8m8mG7g1qv0k3v8l2jvQm0j2s8cQf3p2A=",  # DEV ONLY
+)
+
+
+# 校验
+try:
+    Fernet(CMDB_FERNET_KEY.encode("utf-8"))
+except Exception as e:
+    raise RuntimeError(
+        "CMDB_FERNET_KEY 非法：必须为 Fernet 规范的 urlsafe-base64 key（可用 Fernet.generate_key() 生成）"
+    ) from e
 
 
 # Application definition
@@ -49,6 +78,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'common.drf.RequestTimingMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -84,6 +114,41 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': 5432
     }
+}
+
+# ==============================
+# Celery 配置
+# ==============================
+
+# 使用 Redis 作为 broker（需要本地已启动 redis）
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
+
+# 时区配置
+CELERY_TIMEZONE = "Asia/Shanghai"
+CELERY_ENABLE_UTC = False
+
+# 并发（开发环境）
+CELERY_WORKER_CONCURRENCY = 4
+
+# 序列化格式
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_RESULT_SERIALIZER = "json"
+
+CELERY_BEAT_SCHEDULE = {
+    # 定时任务：每 8 小时执行一次密码轮换
+    "rotate-password-every-8-hours": {
+        "task": "apps.security.tasks.rotate_passwords_batch",
+        # "schedule": crontab(minute=0, hour="*/8"),
+        "schedule": crontab(minute="*/2"),
+    },
+    # 按城市和机房维度统计主机数量, 每天00:00:00
+    "daily-host-stat": {
+        "task": "apps.cmdb.tasks.daily_host_stat",
+        "schedule": crontab(minute=0, hour=0),
+        # "schedule": crontab(minute="*/3"),
+    },
 }
 
 
