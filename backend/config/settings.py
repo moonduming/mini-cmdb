@@ -140,8 +140,8 @@ CELERY_BEAT_SCHEDULE = {
     # 定时任务：每 8 小时执行一次密码轮换
     "rotate-password-every-8-hours": {
         "task": "apps.security.tasks.rotate_passwords_batch",
-        # "schedule": crontab(minute=0, hour="*/8"),
-        "schedule": crontab(minute="*/2"),
+        "schedule": crontab(minute=0, hour="*/8"),
+        # "schedule": crontab(minute="*/2"),
     },
     # 按城市和机房维度统计主机数量, 每天00:00:00
     "daily-host-stat": {
