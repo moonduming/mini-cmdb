@@ -1,6 +1,6 @@
 # mini-cmdb
 
-一个用于笔试展示的 `mini CMDB + 安全轮换 + 运维探测` 项目，基于 Django / DRF / PostgreSQL / Celery / Redis 实现。
+一个集成资产管理、凭据加密与轮换任务、主机探测的运维后端，基于 Django / DRF / PostgreSQL / Celery / Redis 实现。
 
 项目覆盖以下能力：
 
@@ -174,7 +174,7 @@ celery -A config beat -l info
   - 要求：必须是合法 Fernet key
   - 生产建议：由部署平台注入，不写死到仓库
 
-建议你在生产化时进一步把以下配置也改成环境变量：
+部署时还需将以下配置迁移到环境变量：
 
 - `SECRET_KEY`
 - `DEBUG`
